@@ -5,6 +5,7 @@ import GenerateRosterButton from './GenerateRosterButton';
 import SetFinishedButton from './SetFinishedButton';
 import RecordingToggle from './RecordingToggle';
 import LiveGameRefresh from './LiveGameRefresh';
+import GameTime from './GameTime';
 
 // Shared header + tab bar for every game detail view. Deliberately a plain
 // component rather than a `layout.tsx`, because a layout at this segment
@@ -106,9 +107,6 @@ export default function GameHeader({ game, active, counts }: { game: GameRow; ac
   const hasAudit = game.audit_sheet_url && game.audit_sheet_url !== 'creating';
   // Prefer the actual scheduled kickoff/puck-drop time over row-created time.
   const gameTime = game.scheduled_at ?? game.created_at;
-  const playedAt = gameTime
-    ? new Date(gameTime).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
-    : null;
 
   const statusColor =
     game.status === 'live' ? 'text-success' :
@@ -134,7 +132,7 @@ export default function GameHeader({ game, active, counts }: { game: GameRow; ac
               {game.flags?.is_sim && (
                 <span className="text-xs bg-amber-dim text-amber border border-amber-border px-1.5 py-0.5 rounded ml-2">SIM</span>
               )}
-              {playedAt && <span className="text-muted ml-2">· {playedAt}</span>}
+              {gameTime && <GameTime value={gameTime} />}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
