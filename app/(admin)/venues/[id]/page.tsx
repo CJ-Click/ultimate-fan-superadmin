@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import TimezoneEditor from './TimezoneEditor';
 import VenueCodeEditor from './VenueCodeEditor';
 import AutoClaimToggle from './AutoClaimToggle';
+import VenueAdmins, { VenueAdmin } from './VenueAdmins';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +25,7 @@ interface VenueGame {
 async function getVenue(id: string) {
   const { data, error } = await supabase
     .from('locations')
-    .select('id, name, city, timezone, venue_code, is_active, created_at, auto_claim_games')
+    .select('id, name, city, timezone, venue_code, is_active, created_at, auto_claim_games, admin_uid')
     .eq('id', id)
     .maybeSingle();
   if (error) {
@@ -59,6 +60,25 @@ async function getVenueGames(locationId: string): Promise<VenueGame[]> {
   }));
 }
 
+async function getVenueAdmins(locationId: string, primaryUid: string | null): Promise<VenueAdmin[]> {
+  const [{ data: venueAdmins }, { data: primary }] = await Promise.all([
+    supabase.from('users').select('uid,email,display_name,role').eq('location_id', locationId).eq('role', 'admin').order('created_at'),
+    primaryUid
+      ? supabase.from('users').select('uid,email,display_name,role').eq('uid', primaryUid).maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
+  const admins: VenueAdmin[] = (venueAdmins ?? []).filter(row => row.email).map(row => ({
+    uid: row.uid,
+    email: row.email!,
+    displayName: row.display_name ?? '',
+    role: 'admin',
+  }));
+  if (primary?.email && !admins.some(admin => admin.uid === primary.uid)) {
+    admins.unshift({ uid: primary.uid, email: primary.email, displayName: primary.display_name ?? '', role: 'superadmin', primary: true });
+  }
+  return admins;
+}
+
 function StatusBadge({ status }: { status: string }) {
   const cls = status === 'live'  ? 'bg-success/10 text-success border-success/30'
             : status === 'lobby' ? 'bg-amber-dim text-amber border-amber-border'
@@ -82,6 +102,7 @@ export default async function VenueSchedulePage({ params }: { params: { id: stri
   if (!venue) notFound();
 
   const games = await getVenueGames(params.id);
+  const admins = await getVenueAdmins(params.id, venue.admin_uid ?? null);
   const now = Date.now();
   const upcoming = games.filter(g => g.scheduledAt && new Date(g.scheduledAt).getTime() > now && g.status !== 'ended');
   const live      = games.filter(g => g.status === 'live');
@@ -149,6 +170,8 @@ export default async function VenueSchedulePage({ params }: { params: { id: stri
           )}
         </div>
       </div>
+
+      <VenueAdmins locationId={venue.id} admins={admins} />
 
       {games.length === 0 ? (
         <div className="card text-center py-16 text-muted">No games scheduled at this venue yet</div>
