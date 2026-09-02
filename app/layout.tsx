@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Ultimate Fan — Admin',
+  title: 'Ultimate Fan - Superadmin',
   description: 'Ultimate Fan operator dashboard',
 };
 
