@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SESSION_COOKIE } from '@/lib/session';
+
+// Keep this network-boundary check independent of lib/session, which performs
+// the full signed-session verification in server route handlers and pages.
+const SESSION_COOKIE = 'uf_admin_session';
 
 // Routes that don't need auth
 const PUBLIC_ROUTES = ['/login', '/api/auth/session'];
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Allow public routes and static files through

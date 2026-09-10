@@ -289,7 +289,7 @@ function RevokeButton({ user, onRevoked }: { user: AdminUser; onRevoked: () => v
   );
 }
 
-export default function UsersClient({ users, envEmails }: { users: AdminUser[]; envEmails: string[] }) {
+export default function UsersClient({ users }: { users: AdminUser[] }) {
   const router = useRouter();
   const [showAdd, setShowAdd] = useState(false);
   const [changingFor, setChangingFor] = useState<AdminUser | null>(null);
@@ -350,9 +350,6 @@ export default function UsersClient({ users, envEmails }: { users: AdminUser[]; 
                 <tr key={u.uid} className={i % 2 === 0 ? 'bg-white border-b border-border' : 'bg-gray-50/50 border-b border-border'}>
                   <td className="px-3 py-2 font-medium text-gray-900">
                     {u.email || <span className="text-muted italic">no email</span>}
-                    {envEmails.includes(u.email.toLowerCase()) && (
-                      <span className="ml-2 text-xs bg-gray-100 text-muted border border-border px-1.5 py-0.5 rounded">ENV</span>
-                    )}
                   </td>
                   <td className="px-3 py-2 text-secondary">{u.displayName || '—'}</td>
                   <td className="px-3 py-2">
@@ -403,12 +400,9 @@ export default function UsersClient({ users, envEmails }: { users: AdminUser[]; 
       </div>
 
       <p className="text-xs text-muted mt-3 max-w-2xl">
-        Superadmins sign in with the email and password set here, verified against the
-        database. Accounts tagged ENV can also sign in with the shared
-        <span className="font-mono"> ADMIN_PASSWORD</span> from the environment, which no
-        password change here affects. Changing a password replaces it immediately but does
-        not sign out sessions that are already open — to cut off access right now, revoke
-        the account.
+        Superadmins sign in only with the email and password set here, verified against
+        the database. Changing a password replaces it immediately but does not sign out
+        sessions that are already open — to cut off access right now, revoke the account.
       </p>
 
       {showAdd && (

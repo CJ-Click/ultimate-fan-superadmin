@@ -191,11 +191,12 @@ async function fetchOverviewData(sport: string, simOnly: boolean): Promise<GameM
   });
 }
 
-export default async function OverviewPage({
-  searchParams,
-}: {
-  searchParams: { sport?: string; sim?: string };
-}) {
+export default async function OverviewPage(
+  props: {
+    searchParams: Promise<{ sport?: string; sim?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const sport = searchParams.sport === 'NHL' ? 'NHL' : 'NFL';
 
   // If sim param not explicitly set, auto-fall-back to sim data when no real games exist

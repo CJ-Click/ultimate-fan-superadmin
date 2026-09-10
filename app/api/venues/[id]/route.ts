@@ -7,7 +7,8 @@ import { getAdminSession } from '@/lib/session';
 // permanent code players type to join whatever game is currently live at
 // this venue) — either can be sent alone or together. Extend here if other
 // fields need editing later.
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

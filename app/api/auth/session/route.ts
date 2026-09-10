@@ -25,31 +25,19 @@ export async function POST(req: NextRequest) {
 
     const normalized = String(email).trim().toLowerCase();
 
-    // Fast path: the bootstrap account from env vars. Kept so the console stays
-    // reachable even if the users table or the RPC below is unavailable.
-    const adminEmails = (process.env.ADMIN_EMAILS ?? '')
-      .split(',')
-      .map(e => e.trim().toLowerCase())
-      .filter(Boolean);
-    const adminPassword = process.env.ADMIN_PASSWORD ?? '';
-    if (adminEmails.includes(normalized) && adminPassword && password === adminPassword) {
-      return withSession('superadmin', normalized);
-    }
-
-    // BUG FIX: this fallback used to query
+    // This route used to query
     //   .eq('email', email).eq('password', password)
     // against a `users.password` column that does not exist in the schema
     // (015_passwords_and_roles.sql added `password_hash`, and no migration ever
     // added a plaintext `password`). PostgREST therefore failed the request
-    // outright, the error branch returned 401, and EVERY database-backed login
-    // was rejected — the env fast path above was the only way into the console,
-    // and existing superadmin rows with a valid password_hash could never sign
-    // in. It also meant passwords were being compared in plaintext by design.
+    // outright, the error branch returned 401, and existing superadmin rows
+    // with a valid password_hash could never sign in. It also meant passwords
+    // were being compared in plaintext by design.
     //
     // Now verified through the verify_credentials RPC
     // (020_admin_password_required.sql), which bcrypt-checks password_hash
-    // server-side and explicitly refuses admin/superadmin rows that have no
-    // password set.
+    // server-side. This is the only login path: do not add a shared environment
+    // password fallback, because it bypasses account-level revocation and audit.
     const { data, error } = await supabase.rpc('verify_credentials', {
       p_email: normalized,
       p_password: password,
@@ -69,14 +57,8 @@ export async function POST(req: NextRequest) {
     } | null;
 
     if (!result?.success) {
-      if (result?.error === 'password_not_set') {
-        return NextResponse.json(
-          { error: 'This account has no password set. Create it again from Users, or use the app\'s password reset flow.' },
-          { status: 403 }
-        );
-      }
-      // not_found / wrong_password are deliberately reported identically so the
-      // response can't be used to enumerate which emails have accounts.
+      // Not found, wrong password, and a passwordless row are deliberately
+      // reported identically so this endpoint cannot enumerate accounts.
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
@@ -87,10 +69,7 @@ export async function POST(req: NextRequest) {
     // The previous code intended to allow both, but never actually ran (see
     // above), so restricting to superadmin changes no working login.
     if (result.role !== 'superadmin') {
-      return NextResponse.json(
-        { error: 'Access denied. This account does not have superadmin privileges.' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
     // Belt-and-braces: verify_credentials has a legacy branch that reports
@@ -98,10 +77,7 @@ export async function POST(req: NextRequest) {
     // (email-only player recovery). 020 already blocks that for admin roles;
     // refuse it here too so a passwordless row can never open a console session.
     if (result.password_required === false) {
-      return NextResponse.json(
-        { error: 'This account has no password set.' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
     if (!result.uid) {
@@ -110,7 +86,7 @@ export async function POST(req: NextRequest) {
 
     return withSession(result.uid, normalized);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error('SuperAdmin sign-in failed:', err);
+    return NextResponse.json({ error: 'Sign-in is temporarily unavailable' }, { status: 500 });
   }
 }

@@ -31,7 +31,8 @@ async function getStates(gameId: string): Promise<StateRow[]> {
   return (data ?? []) as StateRow[];
 }
 
-export default async function RawStatePage({ params }: { params: { id: string } }) {
+export default async function RawStatePage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const game = await getGame(params.id);
   if (!game) notFound();
 

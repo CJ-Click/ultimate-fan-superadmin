@@ -5,7 +5,8 @@ import { getAdminSession } from '@/lib/session';
 // Optional Superadmin tooling. The database RPC performs game/venue
 // authorization, serializes duplicate checks, and records the audit event in
 // the same transaction as the bet record.
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: 'Sign in required.' }, { status: 401 });
   const body = await req.json().catch(() => null);

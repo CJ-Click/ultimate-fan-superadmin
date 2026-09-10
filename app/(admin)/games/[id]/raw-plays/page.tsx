@@ -49,7 +49,8 @@ function lift(payload: Record<string, unknown> | null) {
   };
 }
 
-export default async function RawPlaysPage({ params }: { params: { id: string } }) {
+export default async function RawPlaysPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const game = await getGame(params.id);
   if (!game) notFound();
 

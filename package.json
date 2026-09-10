@@ -6,26 +6,26 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint ."
   },
   "dependencies": {
-    "next": "14.2.5",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
     "@supabase/supabase-js": "^2.44.4",
-    "uuid": "^10.0.0",
-    "clsx": "^2.1.1"
+    "clsx": "^2.1.1",
+    "next": "^16.3.4",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "uuid": "^11.1.1"
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/react": "^19.2.10",
+    "@types/react-dom": "^19.2.3",
     "@types/uuid": "^10.0.0",
-    "typescript": "^5",
-    "tailwindcss": "^3.4.4",
-    "postcss": "^8",
     "autoprefixer": "^10",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.5"
+    "eslint": "^9.39.3",
+    "eslint-config-next": "^16.3.4",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5"
   }
 }

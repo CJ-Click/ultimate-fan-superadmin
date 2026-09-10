@@ -191,7 +191,8 @@ function ResponseCell({ r }: { r: string }) {
   return <span className={`whitespace-pre-line leading-tight ${cellStyle(r)}`}>{r}</span>;
 }
 
-export default async function AuditPage({ params }: { params: { id: string } }) {
+export default async function AuditPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const data = await getAuditData(params.id);
   if (!data) notFound();
 

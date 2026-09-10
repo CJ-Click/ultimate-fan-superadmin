@@ -97,7 +97,8 @@ function fmtDate(iso: string | null) {
   });
 }
 
-export default async function VenueSchedulePage({ params }: { params: { id: string } }) {
+export default async function VenueSchedulePage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const venue = await getVenue(params.id);
   if (!venue) notFound();
 

@@ -147,13 +147,14 @@ function statTotal(payload: unknown): number {
   return total;
 }
 
-export default async function RawSnapshotsPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { view?: string };
-}) {
+export default async function RawSnapshotsPage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ view?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const game = await getGame(params.id);
   if (!game) notFound();
 

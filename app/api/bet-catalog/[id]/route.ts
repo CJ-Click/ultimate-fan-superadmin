@@ -29,7 +29,8 @@ function validPayload(value: Record<string, unknown>): boolean {
   return ['pricing', 'option_builder', 'selection_policy', 'settlement_rule'].every((key) => validJsonObject(value[key]));
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await request.json();

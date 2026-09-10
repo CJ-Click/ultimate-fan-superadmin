@@ -6,7 +6,8 @@ function optionalPositiveInteger(value: unknown) {
   return value === null || (Number.isInteger(value) && Number(value) > 0);
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await request.json();

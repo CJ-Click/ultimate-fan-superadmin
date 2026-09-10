@@ -9,7 +9,8 @@ import { getAdminSession } from '@/lib/session';
 // latter refuses to overwrite a password that is already set — see 049, which
 // hardened it to close an anon-key takeover path. The new RPC is granted to
 // service_role only and this route runs server-side with the service key.
-export async function POST(req: NextRequest, { params }: { params: { uid: string } }) {
+export async function POST(req: NextRequest, props: { params: Promise<{ uid: string }> }) {
+  const params = await props.params;
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

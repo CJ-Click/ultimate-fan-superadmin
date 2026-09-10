@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import BetCatalogEditor, { EditableBet } from './BetCatalogEditor';
 
-export default async function BetCatalogEditPage({ params }: { params: { id: string } }) {
+export default async function BetCatalogEditPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { data } = await supabase.from('bet_catalog').select('*').eq('id', params.id).maybeSingle();
   if (!data) notFound();
   const bet = data as EditableBet;

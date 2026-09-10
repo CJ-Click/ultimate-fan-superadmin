@@ -43,12 +43,5 @@ async function getAdminUsers(): Promise<AdminUser[]> {
 
 export default async function UsersPage() {
   const users = await getAdminUsers();
-  // ADMIN_EMAILS is the env-var bootstrap login that bypasses the users table
-  // entirely, so it's worth showing alongside the real rows.
-  const envEmails = (process.env.ADMIN_EMAILS ?? '')
-    .split(',')
-    .map(e => e.trim().toLowerCase())
-    .filter(Boolean);
-
-  return <UsersClient users={users} envEmails={envEmails} />;
+  return <UsersClient users={users} />;
 }

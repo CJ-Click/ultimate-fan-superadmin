@@ -3,7 +3,10 @@ import Link from 'next/link';
 import CatalogTable, { type CatalogRow } from './CatalogTable';
 
 const stringValue = (value: string | string[] | undefined) => typeof value === 'string' ? value : '';
-export default async function GlobalBetCatalogPage({ searchParams = {} }: { searchParams?: Record<string, string | string[] | undefined> }) {
+export default async function GlobalBetCatalogPage(
+  props: { searchParams?: Promise<Record<string, string | string[] | undefined>> }
+) {
+  const searchParams = (await props.searchParams) ?? {};
   const sport = stringValue(searchParams.sport) || 'NFL';
   const tier = stringValue(searchParams.tier);
   const status = stringValue(searchParams.status) || 'all';

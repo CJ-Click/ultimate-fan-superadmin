@@ -53,7 +53,8 @@ function playerPickResults(rows: BetHistoryRow[], picks: PlayerPickRow[]) {
   return total === 0 ? '—' : `${won} won · ${lost} lost · ${Math.round((won / total) * 100)}% won`;
 }
 
-export default async function BetCatalogPage({ params }: { params: { id: string } }) {
+export default async function BetCatalogPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const game = await getGame(params.id);
   if (!game) notFound();
   const { bets: betsTable, playerBets: playerBetsTable } = betTables(game.sport);

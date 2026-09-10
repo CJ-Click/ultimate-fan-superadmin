@@ -48,7 +48,8 @@ async function getBetStats(gameId: string, sport: string | null) {
   return { stats: chronological, open };
 }
 
-export default async function GameBetsPage({ params }: { params: { id: string } }) {
+export default async function GameBetsPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const game = await getGame(params.id);
   if (!game) notFound();
 

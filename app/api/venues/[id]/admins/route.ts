@@ -3,8 +3,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '@/lib/supabase';
 import { getAdminSession } from '@/lib/session';
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!await getAdminSession()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  if (!(await getAdminSession())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await req.json();
   const email = String(body.email ?? '').trim().toLowerCase();

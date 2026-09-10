@@ -8,7 +8,8 @@ import { getAdminSession } from '@/lib/session';
 // to a location and are created alongside their venue in
 // app/api/venues/route.ts, so deleting one here would leave a venue with no
 // login. Those belong on the venue page if they ever need managing.
-export async function DELETE(_req: NextRequest, { params }: { params: { uid: string } }) {
+export async function DELETE(_req: NextRequest, props: { params: Promise<{ uid: string }> }) {
+  const params = await props.params;
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -29,15 +30,13 @@ export async function DELETE(_req: NextRequest, { params }: { params: { uid: str
     );
   }
 
-  // Don't let the signed-in operator lock themselves out. Matched on email
-  // rather than uid because the env-var bootstrap login (ADMIN_EMAILS) issues
-  // its session with the literal uid 'superadmin', which matches no row.
+  // Don't let the signed-in operator lock themselves out.
   if (target.email && target.email.toLowerCase() === session.email.toLowerCase()) {
     return NextResponse.json({ error: 'You cannot revoke your own account' }, { status: 400 });
   }
 
-  // Never empty the table — a console with no superadmin rows can only be
-  // entered through the ADMIN_EMAILS/ADMIN_PASSWORD env pair.
+  // Never empty the table: access must remain recoverable through an existing
+  // named superadmin account, not a shared environment password.
   const { count } = await supabase
     .from('users')
     .select('uid', { count: 'exact', head: true })

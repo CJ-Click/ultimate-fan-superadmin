@@ -44,30 +44,28 @@ export function verifySession(token: string): { uid: string; email: string } | n
 }
 
 export async function getAdminSession(): Promise<{ uid: string; email: string } | null> {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const cookie = cookieStore.get(SESSION_COOKIE);
   if (!cookie) return null;
-  return verifySession(cookie.value);
-}
+  const session = verifySession(cookie.value);
+  if (!session) return null;
 
-export async function isAdminEmail(email: string): Promise<boolean> {
-  // Check env var list first
-  const envEmails = process.env.ADMIN_EMAILS?.split(',').map(e => e.trim()) ?? [];
-  if (envEmails.includes(email)) return true;
+  // A signature proves that our server minted the cookie, not that its account
+  // still has SuperAdmin authority. Re-check the current row so a revoked or
+  // downgraded account loses access on its next page/API request rather than
+  // retaining a five-day session.
+  const { data, error } = await supabase
+    .from('users')
+    .select('uid, email, role')
+    .eq('uid', session.uid)
+    .eq('role', 'superadmin')
+    .maybeSingle();
+  if (error || !data) return null;
 
-  // Check users table for superadmin role
-  try {
-    const { data } = await supabase
-      .from('users')
-      .select('role')
-      .eq('email', email)
-      .eq('role', 'superadmin')
-      .limit(1)
-      .single();
-    return !!data;
-  } catch {
-    return false;
-  }
+  return {
+    uid: data.uid,
+    email: typeof data.email === 'string' && data.email ? data.email : session.email,
+  };
 }
 
 export const SESSION_DURATION_MS_EXPORT = SESSION_DURATION_MS;

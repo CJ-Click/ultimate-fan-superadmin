@@ -46,7 +46,11 @@ const totalYards = (yardage: Yardage) =>
 
 const yardageText = (value: number | null) => value === null ? '—' : value.toLocaleString();
 
-export default async function GameAthletesPage({ params, searchParams }: { params: { id: string }; searchParams?: { view?: string } }) {
+export default async function GameAthletesPage(
+  props: { params: Promise<{ id: string }>; searchParams?: Promise<{ view?: string }> }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const game = await getGame(params.id);
   if (!game) notFound();
   const [counts, result, rosterResult, snapshotResult] = await Promise.all([

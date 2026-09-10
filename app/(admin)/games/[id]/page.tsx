@@ -23,7 +23,8 @@ function formatCell(value: unknown): string {
   return String(value);
 }
 
-export default async function GameUsersPage({ params }: { params: { id: string } }) {
+export default async function GameUsersPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const game = await getGame(params.id);
   if (!game) notFound();
 
