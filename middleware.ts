@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { SESSION_COOKIE } from '@/lib/session';
 
 // Routes that don't need auth
-const PUBLIC_ROUTES = ['/login', '/api/auth/session'];
+const PUBLIC_ROUTES = ['/login', '/auth/callback', '/api/auth/session', '/api/auth/google'];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
